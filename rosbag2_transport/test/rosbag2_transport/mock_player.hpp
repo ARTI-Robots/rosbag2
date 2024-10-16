@@ -35,6 +35,13 @@ public:
   : Player(std::move(reader), storage_options, play_options, node_name)
   {}
 
+  MockPlayer(
+    std::vector<rosbag2_transport::Player::ReaderStorageOptionsPair> && input_bags,
+    const rosbag2_transport::PlayOptions & play_options,
+    const std::string & node_name = "rosbag2_mock_player")
+  : Player(std::move(input_bags), play_options, node_name)
+  {}
+
   explicit MockPlayer(
     const std::string & node_name = "rosbag2_mock_composable_player",
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions())

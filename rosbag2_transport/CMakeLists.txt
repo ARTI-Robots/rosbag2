@@ -31,6 +31,7 @@ find_package(keyboard_handler REQUIRED)
 find_package(rcl REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
 find_package(rosbag2_compression REQUIRED)
@@ -65,6 +66,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PRIVATE
   rcl::rcl
   rclcpp_components::component
+  rcpputils::rcpputils
   rcutils::rcutils
   rmw::rmw
   rosbag2_compression::rosbag2_compression
@@ -113,6 +115,7 @@ if(BUILD_TESTING)
   add_definitions(-D_SRC_RESOURCES_DIR_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test/resources")
 
   find_package(ament_cmake_gmock REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   find_package(composition_interfaces REQUIRED)
@@ -533,6 +536,15 @@ if(BUILD_TESTING)
     ${PROJECT_NAME}
     rcpputils::rcpputils
     rosbag2_test_common::rosbag2_test_common
+  )
+
+  ament_add_gtest(test_meta_priority_queue
+    test/rosbag2_transport/test_meta_priority_queue.cpp)
+  target_include_directories(test_meta_priority_queue PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/rosbag2_transport>)
+  target_link_libraries(test_meta_priority_queue
+    rcpputils::rcpputils
+    shared_queues_vendor::singleproducerconsumer
   )
 endif()
 

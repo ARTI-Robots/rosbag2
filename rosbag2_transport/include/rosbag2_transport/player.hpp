@@ -74,6 +74,10 @@ public:
   /// delete_on_play_message_callback.
   using callback_handle_t = uint64_t;
 
+  /// \brief Utility type for a pair of rosbag2_cpp::Reader and rosbag2_storage::StorageOptions.
+  using ReaderStorageOptionsPair = \
+    std::pair<std::unique_ptr<rosbag2_cpp::Reader>, rosbag2_storage::StorageOptions>;
+
   /// \brief Const describing invalid value for callback_handle.
   ROSBAG2_TRANSPORT_PUBLIC
   static constexpr callback_handle_t invalid_callback_handle = 0;
@@ -147,6 +151,55 @@ public:
     std::unique_ptr<rosbag2_cpp::Reader> reader,
     std::shared_ptr<KeyboardHandler> keyboard_handler,
     const rosbag2_storage::StorageOptions & storage_options,
+    const rosbag2_transport::PlayOptions & play_options,
+    const std::string & node_name = "rosbag2_player",
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
+
+  /// \brief Constructor which will construct Player class with provided parameters and default
+  /// rosbag2_cpp::reader and KeyboardHandler classes.
+  /// \note The KeyboardHandler class will be initialized with parameter which is disabling
+  /// signal handlers in it.
+  /// \param storage_options Storage options which will each be applied to a rosbag2_cpp::reader
+  /// after construction.
+  /// \param play_options Playback settings for Player class.
+  /// \param node_name Name for the underlying node.
+  /// \param node_options Node options which will be used during construction of the underlying
+  /// node.
+  ROSBAG2_TRANSPORT_PUBLIC
+  Player(
+    const std::vector<rosbag2_storage::StorageOptions> & storage_options,
+    const rosbag2_transport::PlayOptions & play_options,
+    const std::string & node_name = "rosbag2_player",
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
+
+  /// \brief Constructor which will construct Player class with provided parameters.
+  /// \param input_bags Vector of pairs of unique pointer to the rosbag2_cpp::Reader class (which
+  /// will be moved to the internal instance of the Player class during construction) and storage
+  /// options (which will be applied to the rosbag2_cpp::reader when opening it).
+  /// \param play_options Playback settings for Player class.
+  /// \param node_name Name for the underlying node.
+  /// \param node_options Node options which will be used during construction of the underlying
+  /// node.
+  ROSBAG2_TRANSPORT_PUBLIC
+  Player(
+    std::vector<ReaderStorageOptionsPair> && input_bags,
+    const rosbag2_transport::PlayOptions & play_options,
+    const std::string & node_name = "rosbag2_player",
+    const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
+
+  /// \brief Constructor which will construct Player class with provided parameters.
+  /// \param input_bags Vector of pairs of unique pointer to the rosbag2_cpp::Reader class (which
+  /// will be moved to the internal instance of the Player class during construction) and storage
+  /// options (which will be applied to the rosbag2_cpp::reader when opening it).
+  /// \param keyboard_handler Keyboard handler class uses to handle user input from keyboard.
+  /// \param play_options Playback settings for Player class.
+  /// \param node_name Name for the underlying node.
+  /// \param node_options Node options which will be used during construction of the underlying
+  /// node.
+  ROSBAG2_TRANSPORT_PUBLIC
+  Player(
+    std::vector<ReaderStorageOptionsPair> && input_bags,
+    std::shared_ptr<KeyboardHandler> keyboard_handler,
     const rosbag2_transport::PlayOptions & play_options,
     const std::string & node_name = "rosbag2_player",
     const rclcpp::NodeOptions & node_options = rclcpp::NodeOptions());
@@ -301,7 +354,7 @@ protected:
   ROSBAG2_TRANSPORT_PUBLIC
   /// \brief Getter for the currently stored storage options
   /// \return Copy of the currently stored storage options
-  const rosbag2_storage::StorageOptions & get_storage_options();
+  std::vector<rosbag2_storage::StorageOptions> get_storage_options();
 
   ROSBAG2_TRANSPORT_PUBLIC
   /// \brief Getter for the currently stored play options

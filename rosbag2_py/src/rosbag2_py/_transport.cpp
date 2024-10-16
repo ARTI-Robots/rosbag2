@@ -184,6 +184,13 @@ public:
     const rosbag2_storage::StorageOptions & storage_options,
     PlayOptions & play_options)
   {
+    play_impl(std::vector{storage_options}, play_options, false);
+  }
+
+  void play(
+    const std::vector<rosbag2_storage::StorageOptions> & storage_options,
+    PlayOptions & play_options)
+  {
     play_impl(storage_options, play_options, false);
   }
 
@@ -192,7 +199,7 @@ public:
     PlayOptions & play_options,
     size_t num_messages)
   {
-    play_impl(storage_options, play_options, true, num_messages);
+    play_impl(std::vector{storage_options}, play_options, true, num_messages);
   }
 
 protected:
@@ -240,14 +247,17 @@ protected:
   }
 
   void play_impl(
-    const rosbag2_storage::StorageOptions & storage_options,
+    const std::vector<rosbag2_storage::StorageOptions> & storage_options,
     PlayOptions & play_options,
     bool burst = false,
     size_t burst_num_messages = 0)
   {
     install_signal_handlers();
     try {
-      auto reader = rosbag2_transport::ReaderWriterFactory::make_reader(storage_options);
+      std::vector<rosbag2_transport::Player::ReaderStorageOptionsPair> bags{};
+      for (const auto & options : storage_options) {
+        bags.emplace_back(rosbag2_transport::ReaderWriterFactory::make_reader(options), options);
+      }
       std::shared_ptr<KeyboardHandler> keyboard_handler;
       if (!play_options.disable_keyboard_controls) {
 #ifndef _WIN32
@@ -260,7 +270,7 @@ protected:
 #endif
       }
       auto player = std::make_shared<rosbag2_transport::Player>(
-        std::move(reader), std::move(keyboard_handler), storage_options, play_options);
+        std::move(bags), std::move(keyboard_handler), play_options);
 
       rclcpp::executors::SingleThreadedExecutor exec;
       exec.add_node(player);
@@ -591,7 +601,18 @@ PYBIND11_MODULE(_transport, m) {
   py::class_<rosbag2_py::Player>(m, "Player")
   .def(py::init<>())
   .def(py::init<const std::string &>())
-  .def("play", &rosbag2_py::Player::play, py::arg("storage_options"), py::arg("play_options"))
+  .def(
+    "play",
+    py::overload_cast<const rosbag2_storage::StorageOptions &, PlayOptions &>(
+      &rosbag2_py::Player::play),
+    py::arg("storage_options"),
+    py::arg("play_options"))
+  .def(
+    "play",
+    py::overload_cast<const std::vector<rosbag2_storage::StorageOptions> &, PlayOptions &>(
+      &rosbag2_py::Player::play),
+    py::arg("storage_options"),
+    py::arg("play_options"))
   .def(
     "burst", &rosbag2_py::Player::burst, py::arg("storage_options"), py::arg("play_options"),
     py::arg("num_messages"))
