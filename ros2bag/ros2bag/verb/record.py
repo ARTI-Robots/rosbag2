@@ -177,6 +177,15 @@ def add_recorder_arguments(parser: ArgumentParser) -> None:
              'the "/rosbag2_recorder/snapshot" service is called. e.g. \n '
              'ros2 service call /rosbag2_recorder/snapshot rosbag2_interfaces/Snapshot')
     parser.add_argument(
+        '--snapshot-duration', type=int, default=0,
+        help='Maximum snapshot duration in milliseconds.\n'
+             'Default: %(default)d, indicates that the snapshot will be limited by the'
+             ' --max-cache-size parameter only. If the value is more than 0, the cyclic buffer'
+             ' for the snapshot will be limited by both the series of messages duration and the'
+             ' maximum cache size parameter.\n'
+             'To override the upper bound by total messages size, the '
+             '--maximum-cache-size parameter can be settled to 0.')
+    parser.add_argument(
         '--log-level', type=str, default='info',
         choices=['debug', 'info', 'warn', 'error', 'fatal'],
         help='Logging level.')
@@ -281,6 +290,10 @@ def validate_parsed_arguments(args, uri) -> str:
     if args.compression_queue_size < 0:
         return print_error('Compression queue size must be at least 0.')
 
+    if args.snapshot_mode and args.snapshot_duration == 0 and args.max_cache_size == 0:
+        return print_error('In snapshot mode, either the snapshot_duration or max_bytes_size shall'
+                           ' not be set to zero.')
+
 
 class RecordVerb(VerbExtension):
     """Record ROS data to a bag."""
@@ -325,6 +338,7 @@ class RecordVerb(VerbExtension):
             storage_preset_profile=args.storage_preset_profile,
             storage_config_uri=storage_config_file,
             snapshot_mode=args.snapshot_mode,
+            snapshot_duration_ms=args.snapshot_duration,
             custom_data=custom_data
         )
         record_options = RecordOptions()
