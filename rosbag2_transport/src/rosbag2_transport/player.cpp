@@ -904,12 +904,13 @@ Player::callback_handle_t PlayerImpl::get_new_on_play_msg_callback_handle()
 
 void PlayerImpl::wait_for_filled_queue() const
 {
-  const auto read_ahead_queues_filled = [this]() {
-      bool filled = true;
+  const auto read_ahead_queues_filled = [this]() -> bool {
       for (std::size_t i = 0; i < input_bags_.size(); i++) {
-        filled &= message_queue_.size_approx(i) >= play_options_.read_ahead_queue_size;
+        if (message_queue_.size_approx(i) < play_options_.read_ahead_queue_size) {
+          return false;
+        }
       }
-      return filled;
+      return true;
     };
   while (
     !read_ahead_queues_filled() &&
@@ -943,9 +944,9 @@ void PlayerImpl::load_storage_content()
         enqueue_up_to_boundary(queue_upper_boundary, bag_index);
       } else {
         lk.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 
@@ -1134,7 +1135,7 @@ void PlayerImpl::prepare_publishers()
   std::vector<rosbag2_storage::TopicMetadata> topics{};
   for (const auto & [reader, _] : input_bags_) {
     auto bag_topics = reader->get_all_topics_and_types();
-    topics.insert(topics.begin(), bag_topics.begin(), bag_topics.end());
+    topics.insert(topics.end(), bag_topics.begin(), bag_topics.end());
   }
   std::string topic_without_support_acked;
   for (const auto & topic : topics) {

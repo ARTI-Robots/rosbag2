@@ -158,35 +158,36 @@ def check_not_negative_int(arg: str) -> int:
         raise ArgumentTypeError('{} is not the valid type (int)'.format(value))
 
 
-def add_standard_reader_args(parser: ArgumentParser, multi: bool = False) -> None:
+def add_standard_reader_args(parser: ArgumentParser, multiple_readers: bool = False) -> None:
     """
     Add arguments for one of multiple input bags.
 
     :param parser: the parser
-    :param multi: whether this is part of a verb that takes in multiple input bags
+    :param multiple_readers: whether this is part of a verb that takes in multiple input bags
     """
-    # If multi, let user provide an input bag path using an optional positional arg, but require
-    # them to use --input to provide an input bag with a specific storage ID
+    # If multiple readers, let user provide an input bag path using an optional positional arg, but
+    # require them to use --input to provide an input bag with a specific storage ID
 
     reader_choices = rosbag2_py.get_registered_readers()
-    bag_help_multi_str = ''
-    storage_help_multi_str = ''
-    if multi:
-        bag_help_multi_str = ' Use --input to provide an input bag with a specific storage ID.'
-        storage_help_multi_str = \
+    bag_help_multiple_readers_str = ''
+    storage_help_multiple_readers_str = ''
+    if multiple_readers:
+        bag_help_multiple_readers_str = \
+            ' Use --input to provide an input bag with a specific storage ID.'
+        storage_help_multiple_readers_str = \
             ' (deprecated: use --input to provide an input bag with a specific storage ID)'
     parser.add_argument(
         'bag_path',
-        nargs='?' if multi else None,
+        nargs='?' if multiple_readers else None,
         type=check_path_exists,
-        help='Bag to open.' + bag_help_multi_str)
+        help='Bag to open.' + bag_help_multiple_readers_str)
     parser.add_argument(
         '-s', '--storage', default='', choices=reader_choices,
         help='Storage implementation of bag. '
              'By default attempts to detect automatically - use this argument to override.'
-             + storage_help_multi_str)
+             + storage_help_multiple_readers_str)
 
-    if multi:
+    if multiple_readers:
         add_multi_bag_input_arg(parser, required=False)
 
 
