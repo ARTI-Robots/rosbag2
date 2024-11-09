@@ -254,9 +254,10 @@ protected:
   {
     install_signal_handlers();
     try {
-      std::vector<rosbag2_transport::Player::ReaderStorageOptionsPair> readers{};
+      std::vector<rosbag2_transport::Player::ReaderStorageOptionsPair> readers_with_options{};
       for (const auto & options : storage_options) {
-        readers.emplace_back(rosbag2_transport::ReaderWriterFactory::make_reader(options), options);
+        readers_with_options.emplace_back(
+          rosbag2_transport::ReaderWriterFactory::make_reader(options), options);
       }
       std::shared_ptr<KeyboardHandler> keyboard_handler;
       if (!play_options.disable_keyboard_controls) {
@@ -270,7 +271,7 @@ protected:
 #endif
       }
       auto player = std::make_shared<rosbag2_transport::Player>(
-        std::move(readers), std::move(keyboard_handler), play_options);
+        std::move(readers_with_options), std::move(keyboard_handler), play_options);
 
       rclcpp::executors::SingleThreadedExecutor exec;
       exec.add_node(player);
