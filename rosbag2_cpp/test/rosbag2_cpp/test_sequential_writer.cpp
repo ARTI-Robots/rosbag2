@@ -534,7 +534,7 @@ TEST_F(SequentialWriterTest, snapshot_writes_to_new_file_with_bag_split)
   // Expect a single write call when the snapshot is triggered
   EXPECT_CALL(
     *storage_, write(
-    An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())
+      An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())
   ).Times(1);
 
   ON_CALL(
@@ -576,7 +576,7 @@ TEST_F(SequentialWriterTest, snapshot_writes_to_new_file_with_bag_split)
   std::string rmw_format = "rmw_format";
 
   writer_->open(storage_options_, {rmw_format, rmw_format});
-  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "",  ""});
+  writer_->create_topic({"test_topic", "test_msgs/BasicTypes", "", ""});
 
   for (const auto & message : messages) {
     writer_->write(message);
@@ -615,7 +615,7 @@ TEST_F(SequentialWriterTest, snapshot_can_be_called_twice)
   // Expect to call write method twice. Once per each snapshot.
   EXPECT_CALL(
     *storage_, write(
-    An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())
+      An<const std::vector<std::shared_ptr<const rosbag2_storage::SerializedBagMessage>> &>())
   ).Times(2);
 
   ON_CALL(*storage_, get_relative_file_path).WillByDefault(

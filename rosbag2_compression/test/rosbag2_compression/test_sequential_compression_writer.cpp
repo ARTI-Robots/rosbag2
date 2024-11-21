@@ -549,9 +549,8 @@ TEST_F(SequentialCompressionWriterTest, snapshot_writes_to_new_file_with_file_co
     auto expected_closed = fs::path(tmp_dir_storage_options_.uri) /
       (bag_base_dir_ + "_" + std::to_string(i) + "." + DefaultTestCompressor);
     auto expected_opened = (i == 1) ?
-      // The last opened file shall be empty string when we do "writer->close();"
-                           fs::path("") : fs::path(tmp_dir_storage_options_.uri) /
-                                          (bag_base_dir_ + "_" + std::to_string(i + 1));
+      fs::path("") : fs::path(tmp_dir_storage_options_.uri) /
+      (bag_base_dir_ + "_" + std::to_string(i + 1));
     ASSERT_STREQ(closed_files[i].c_str(), expected_closed.string().c_str());
     ASSERT_STREQ(opened_files[i].c_str(), expected_opened.string().c_str());
   }
